@@ -1,316 +1,243 @@
-// Define Tuning Presets with Scientific Pitch Notation Frequencies
-const TUNINGS = {
+let audioContext = null;
+let analyser = null;
+let mediaStreamSource = null;
+let isAudioInitialized = false;
+
+// Frequenzen für die Tunings (Note: Frequenz in Hz)
+const tuningPresets = {
     standard: [
-        { note: 'E', octave: 2, freq: 82.41 },
-        { note: 'A', octave: 2, freq: 110.00 },
-        { note: 'D', octave: 3, freq: 146.83 },
-        { note: 'G', octave: 3, freq: 196.00 },
-        { note: 'B', octave: 3, freq: 246.94 },
-        { note: 'E', octave: 4, freq: 329.63 }
+        { note: "E2", freq: 82.41 },
+        { note: "A2", freq: 110.00 },
+        { note: "D3", freq: 146.83 },
+        { note: "G3", freq: 196.00 },
+        { note: "B3", freq: 246.94 },
+        { note: "E4", freq: 329.63 }
     ],
-    drop_d: [
-        { note: 'D', octave: 2, freq: 73.42 },
-        { note: 'A', octave: 2, freq: 110.00 },
-        { note: 'D', octave: 3, freq: 146.83 },
-        { note: 'G', octave: 3, freq: 196.00 },
-        { note: 'B', octave: 3, freq: 246.94 },
-        { note: 'E', octave: 4, freq: 329.63 }
+    dropD: [
+        { note: "D2", freq: 73.42 },
+        { note: "A2", freq: 110.00 },
+        { note: "D3", freq: 146.83 },
+        { note: "G3", freq: 196.00 },
+        { note: "B3", freq: 246.94 },
+        { note: "E4", freq: 329.63 }
     ],
     dadgad: [
-        { note: 'D', octave: 2, freq: 73.42 },
-        { note: 'A', octave: 2, freq: 110.00 },
-        { note: 'D', octave: 3, stroke: 3, freq: 146.83 },
-        { note: 'G', octave: 3, freq: 196.00 },
-        { note: 'A', octave: 3, freq: 220.00 },
-        { note: 'D', octave: 4, freq: 293.66 }
+        { note: "D2", freq: 73.42 },
+        { note: "A2", freq: 110.00 },
+        { note: "D3", freq: 146.83 },
+        { note: "G3", freq: 196.00 },
+        { note: "A3", freq: 220.00 },
+        { note: "D4", freq: 293.66 }
     ],
-    open_g: [
-        { note: 'D', octave: 2, freq: 73.42 },
-        { note: 'G', octave: 2, freq: 98.00 },
-        { note: 'D', octave: 3, freq: 146.83 },
-        { note: 'G', octave: 3, freq: 196.00 },
-        { note: 'B', octave: 3, freq: 246.94 },
-        { note: 'D', octave: 4, freq: 293.66 }
+    openG: [
+        { note: "D2", freq: 73.42 },
+        { note: "G2", freq: 98.00 },
+        { note: "D3", freq: 146.83 },
+        { note: "G3", freq: 196.00 },
+        { note: "B3", freq: 246.94 },
+        { note: "D4", freq: 293.66 }
     ],
-    half_step: [
-        { note: 'D#', octave: 2, freq: 77.78 },
-        { note: 'G#', octave: 2, freq: 103.83 },
-        { note: 'C#', octave: 3, freq: 138.59 },
-        { note: 'F#', octave: 3, freq: 185.00 },
-        { note: 'A#', octave: 3, freq: 233.08 },
-        { note: 'D#', octave: 4, freq: 311.13 }
+    halfStep: [
+        { note: "D#2", freq: 77.78 },
+        { note: "G#2", freq: 103.83 },
+        { note: "C#3", freq: 138.59 },
+        { note: "F#3", freq: 185.00 },
+        { note: "A#3", freq: 233.08 },
+        { note: "D#4", freq: 311.13 }
     ],
-    open_d: [
-        { note: 'D', octave: 2, freq: 73.42 },
-        { note: 'A', octave: 2, freq: 110.00 },
-        { note: 'D', octave: 3, freq: 146.83 },
-        { note: 'F#', octave: 3, freq: 185.00 },
-        { note: 'A', octave: 3, freq: 220.00 },
-        { note: 'D', octave: 4, freq: 293.66 }
+    openD: [
+        { note: "D2", freq: 73.42 },
+        { note: "A2", freq: 110.00 },
+        { note: "D3", freq: 146.83 },
+        { note: "F#3", freq: 174.61 },
+        { note: "A3", freq: 220.00 },
+        { note: "D4", freq: 293.66 }
     ],
-    c_standard: [
-        { note: 'C', octave: 2, freq: 65.41 },
-        { note: 'F', octave: 2, freq: 87.31 },
-        { note: 'A#', octave: 2, freq: 116.54 },
-        { note: 'D#', octave: 3, freq: 155.56 },
-        { note: 'G', octave: 3, freq: 196.00 },
-        { note: 'C', octave: 4, freq: 261.63 }
+    cStandard: [
+        { note: "C2", freq: 65.41 },
+        { note: "F2", freq: 87.31 },
+        { note: "A#2", freq: 116.54 },
+        { note: "D#3", freq: 155.56 },
+        { note: "G3", freq: 196.00 },
+        { note: "C4", freq: 261.63 }
     ]
 };
 
-// Global audio & state fields
-let audioContext = null;
-let analyser = null;
-let scriptProcessor = null;
-let currentTuningKey = 'standard';
-let lockedStringIndex = null; // null = Auto-Mode; Number = locked index
+let currentTuning = "standard";
+let selectedStringIndex = null; // null = Auto-Modus
 
-// Cache UI Elements
-const btnStart = document.getElementById('btn-start');
 const startOverlay = document.getElementById('start-overlay');
+const startBtn = document.getElementById('start-btn');
 const tuningSelect = document.getElementById('tuning-select');
 const stringsContainer = document.getElementById('strings-container');
-const needle = document.getElementById('tuner-needle');
+const needle = document.getElementById('needle');
 const centsDisplay = document.getElementById('cents-display');
 const currentNoteDisplay = document.getElementById('current-note');
-const statusText = document.getElementById('status-text');
-const freqDisplay = document.getElementById('freq-display');
-const modeBadge = document.getElementById('mode-badge');
-const btnResetMode = document.getElementById('btn-reset-mode');
 
-// Audio Processing Buffers & Configuration
-const BUFFER_SIZE = 2048;
-let audioBuffer = new Float32Array(BUFFER_SIZE);
+// Event-Listener für den Start-Button (Zwingend erforderlich für Browser-Sicherheit)
+startBtn.addEventListener('click', async () => {
+    await initAudio();
+    startOverlay.style.display = 'none';
+});
 
-// Event Listeners Initialization
-btnStart.addEventListener('click', initAudioEngine);
+// Tuning-Auswahl wechseln
 tuningSelect.addEventListener('change', (e) => {
-    currentTuningKey = e.target.value;
-    lockedStringIndex = null;
-    updateStringsUI();
-    updateModeIndicator();
-});
-btnResetMode.addEventListener('click', () => {
-    lockedStringIndex = null;
-    updateStringsUI();
-    updateModeIndicator();
+    currentTuning = e.target.value;
+    selectedStringIndex = null; // Zurücksetzen auf Auto-Modus
+    renderStrings();
 });
 
-// Setup & Initialize Web Audio Node graph upon interaction
-async function initAudioEngine() {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
-        // Hide permissions view layout cleanly
-        startOverlay.style.opacity = '0';
-        setTimeout(() => startOverlay.style.display = 'none', 300);
-
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioContext.createAnalyser();
-        analyser.fftSize = BUFFER_SIZE;
-
-        const source = audioContext.createMediaStreamSource(stream);
-        
-        // Setup raw time-domain processing connection structure
-        scriptProcessor = audioContext.createScriptProcessor(BUFFER_SIZE, 1, 1);
-        scriptProcessor.onaudioprocess = processAudioFrame;
-
-        source.connect(analyser);
-        analyser.connect(scriptProcessor);
-        scriptProcessor.connect(audioContext.destination);
-
-        // Initial setup for interface targets
-        updateStringsUI();
-    } catch (err) {
-        console.error("Microphone activation failed:", err);
-        alert("Mikrofon konnte nicht aktiviert werden. Bitte überprüfe deine Browsereinstellungen und lade die Seite über HTTPS.");
-    }
-}
-
-// Generate the visual interactive interactive panels representing the instrument strings
-function updateStringsUI() {
+// Saiten-Anzeige generieren
+function renderStrings() {
     stringsContainer.innerHTML = '';
-    const strings = TUNINGS[currentTuningKey];
+    const strings = tuningPresets[currentTuning];
     
-    strings.forEach((str, index) => {
-        const btn = document.createElement('div');
-        btn.className = 'string-btn';
-        if (index === lockedStringIndex) btn.classList.add('user-locked');
+    // Von hoher Saite (E4) zu tiefer Saite (E2) anzeigen
+    [...strings].reverse().forEach((str, revIndex) => {
+        const actualIndex = strings.length - 1 - revIndex;
+        const stringBtn = document.createElement('button');
+        stringBtn.className = 'string-btn';
+        if (selectedStringIndex === actualIndex) stringBtn.classList.add('active');
+        stringBtn.innerHTML = `<span>${str.note}</span><small>${str.freq} Hz</small>`;
         
-        btn.innerHTML = `
-            <span class="str-name">${str.note}</span>
-            <span class="str-oct">${str.octave}</span>
-        `;
-        
-        btn.addEventListener('click', () => {
-            if (lockedStringIndex === index) {
-                lockedStringIndex = null; // toggle off lock
+        stringBtn.addEventListener('click', () => {
+            if (selectedStringIndex === actualIndex) {
+                selectedStringIndex = null; // Erneut klicken schaltet Auto-Modus wieder an
+                stringBtn.classList.remove('active');
             } else {
-                lockedStringIndex = index;
+                selectedStringIndex = actualIndex;
+                document.querySelectorAll('.string-btn').forEach(b => b.classList.remove('active'));
+                stringBtn.classList.add('active');
             }
-            updateStringsUI();
-            updateModeIndicator();
         });
-        
-        stringsContainer.appendChild(btn);
+        stringsContainer.appendChild(stringBtn);
     });
 }
 
-function updateModeIndicator() {
-    if (lockedStringIndex !== null) {
-        modeBadge.textContent = "Manueller Modus";
-        modeBadge.className = "badge manual";
-        btnResetMode.style.display = "inline-block";
-    } else {
-        modeBadge.textContent = "Auto-Modus";
-        modeBadge.className = "badge";
-        btnResetMode.style.display = "none";
+// Audio-Engine initialisieren
+async function initAudio() {
+    if (isAudioInitialized) return;
+    
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
+        
+        mediaStreamSource = audioContext.createMediaStreamSource(stream);
+        mediaStreamSource.connect(analyser);
+        
+        isAudioInitialized = true;
+        renderStrings();
+        updateTuner(); // Startet die Animations-Schleife für die Skala
+    } catch (err) {
+        alert("Mikrofon-Zugriff verweigert oder nicht unterstützt. Bitte lade die Seite über HTTPS (GitHub Pages) und erlaube das Mikrofon.");
+        console.error(err);
     }
 }
 
-// Frame analysis hook calling autocorrelation algorithm 
-function processAudioFrame(e) {
-    analyser.getFloatTimeDomainData(audioBuffer);
-    const sampleRate = audioContext.sampleRate;
+// Animations-Schleife für Tonhöhen-Erkennung und Skala-Ausschlag
+function updateTuner() {
+    if (!isAudioInitialized) return;
     
-    const frequency = autoCorrelate(audioBuffer, sampleRate);
+    const bufferLength = analyser.fftSize;
+    const dataArray = new Float32Array(bufferLength);
+    analyser.getFloatTimeDomainData(dataArray);
     
-    if (frequency === -1) {
-        // No stable periodic wave structure detected (Silence/Noise)
-        return; 
-    }
-
-    // Direct numerical mapping against active preset frequencies target list
-    const currentTuning = TUNINGS[currentTuningKey];
-    let targetIndex = 0;
-
-    if (lockedStringIndex !== null) {
-        targetIndex = lockedStringIndex;
-    } else {
-        // Dynamic search closest target frequency
-        let minDiff = Infinity;
-        currentTuning.forEach((str, idx) => {
-            const diff = Math.abs(frequency - str.freq);
-            if (diff < minDiff) {
-                minDiff = diff;
-                targetIndex = idx;
+    // Grundfrequenz mittels Autokorrelation bestimmen
+    const frequency = autoCorrelate(dataArray, audioContext.sampleRate);
+    
+    if (frequency !== -1 && frequency > 50 && frequency < 500) {
+        const strings = tuningPresets[currentTuning];
+        let targetString = null;
+        
+        if (selectedStringIndex !== null) {
+            targetString = strings[selectedStringIndex];
+        } else {
+            // Auto-Modus: Finde die Saite mit der geringsten Frequenz-Abweichung
+            let minDiff = Infinity;
+            strings.forEach((str, idx) => {
+                let diff = Math.abs(frequency - str.freq);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    targetString = str;
+                }
+            });
+        }
+        
+        if (targetString) {
+            // Berechnung der Abweichung in Cents
+            const cents = 1200 * Math.log2(frequency / targetString.freq);
+            
+            // UI aktualisieren
+            currentNoteDisplay.textContent = targetString.note;
+            centsDisplay.textContent = (cents >= 0 ? "+" : "") + Math.round(cents) + " Cents";
+            
+            // Nadel bewegen (-50 Cents = -45 Grad, +50 Cents = 45 Grad)
+            let angle = Math.max(-45, Math.min(45, cents * 0.9));
+            needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+            
+            // Farb-Indikator setzen
+            if (Math.abs(cents) <= 3) {
+                needle.style.backgroundColor = "#2ecc71"; // Perfekt Grün
+                centsDisplay.style.color = "#2ecc71";
+            } else if (Math.abs(cents) <= 15) {
+                needle.style.backgroundColor = "#f39c12"; // Leicht daneben Orange
+                centsDisplay.style.color = "#f39c12";
+            } else {
+                needle.style.backgroundColor = "#e74c3c"; // Stark daneben Rot
+                centsDisplay.style.color = "#e74c3c";
             }
-        });
+        }
     }
-
-    const targetNote = currentTuning[targetIndex];
     
-    // Calculate cent error divergence formula: 1200 * log2(f1 / f2)
-    const cents = 1200 * Math.log2(frequency / targetNote.freq);
-    
-    // Refresh GUI states matching calculation results
-    renderTunerState(frequency, targetNote, cents, targetIndex);
+    requestAnimationFrame(updateTuner);
 }
 
-// Autocorrelation pitch detection algorithm implementation
+// Autokorrelations-Algorithmus zur präzisen Frequenzbestimmung
 function autoCorrelate(buffer, sampleRate) {
-    // Check root mean square (RMS) energy threshold to drop silent samples
+    let SIZE = buffer.length;
     let rms = 0;
-    for (let i = 0; i < buffer.length; i++) {
-        rms += buffer[i] * buffer[i];
-    }
-    rms = Math.sqrt(rms / buffer.length);
-    if (rms < 0.01) return -1;
 
-    // Clip buffer bounds search
-    let r1 = 0, r2 = buffer.length - 1;
-    const thres = 0.2;
-    for (let i = 0; i < buffer.length / 2; i++) {
+    for (let i = 0; i < SIZE; i++) {
+        let val = buffer[i];
+        rms += val * val;
+    }
+    rms = Math.sqrt(rms / SIZE);
+    if (rms < 0.01) return -1; // Zu leises Signal / Rauschen ignorieren
+
+    let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+    for (let i = 0; i < SIZE / 2; i++) {
         if (Math.abs(buffer[i]) < thres) { r1 = i; break; }
     }
-    for (let i = buffer.length - 1; i >= buffer.length / 2; i--) {
+    for (let i = SIZE - 1; i >= SIZE / 2; i--) {
         if (Math.abs(buffer[i]) < thres) { r2 = i; break; }
     }
-    const slicedBuffer = buffer.subarray(r1, r2);
-    
-    // Cross-correlation lag profile array allocation
-    const c = new Float32Array(slicedBuffer.length);
-    for (let i = 0; i < slicedBuffer.length; i++) {
-        for (let j = 0; j < slicedBuffer.length - i; j++) {
-            c[i] += slicedBuffer[j] * slicedBuffer[j + i];
+
+    buffer = buffer.slice(r1, r2);
+    SIZE = buffer.length;
+
+    let c = new Float32Array(SIZE);
+    for (let i = 0; i < SIZE; i++) {
+        for (let j = 0; j < SIZE - i; j++) {
+            c[i] = c[i] + buffer[j] * buffer[j + i];
         }
     }
 
-    // Look for first descending edge slope
-    let d = 0;
-    while (c[d] > c[d + 1]) d++;
-    
-    // Find absolute dominant period correlation peak matching base structural pattern
-    let maxVal = -1, maxLag = -1;
-    for (let i = d; i < c.length; i++) {
-        if (c[i] > maxVal) {
-            maxVal = c[i];
-            maxLag = i;
+    let d = 0; while (c[d] > c[d + 1]) d++;
+    let maxval = -1, maxpos = -1;
+    for (let i = d; i < SIZE; i++) {
+        if (c[i] > maxval) {
+            maxval = c[i];
+            maxpos = i;
         }
     }
-    
-    let T0 = maxLag;
-    
-    // Parabolic interpolation refinement step
-    if (T0 > 0 && T0 < c.length - 1) {
-        const alpha = c[T0 - 1];
-        const beta = c[T0];
-        const gamma = c[T0 + 1];
-        const p = 0.5 * (alpha - gamma) / (alpha - 2 * beta + gamma);
-        T0 = T0 + p;
-    }
+    let T0 = maxpos;
+
+    let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
+    let a = (x1 + x3 - 2 * x2) / 2;
+    let b = (x3 - x1) / 2;
+    if (a) T0 = T0 - b / (2 * a);
 
     return sampleRate / T0;
-}
-
-// Paint UI updates mapping physical instrument feedback
-function renderTunerState(frequency, targetNote, cents, activeIdx) {
-    // Visually toggle active states matching current processed string matrix
-    const buttons = stringsContainer.children;
-    for (let i = 0; i < buttons.length; i++) {
-        if (i === activeIdx) {
-            buttons[i].classList.add('active-target');
-        } else {
-            buttons[i].classList.remove('active-target');
-        }
-    }
-
-    // Refresh alphanumeric readout nodes 
-    currentNoteDisplay.textContent = targetNote.note;
-    freqDisplay.textContent = `${frequency.toFixed(1)} Hz / Ziel: ${targetNote.freq.toFixed(1)} Hz`;
-
-    // Cap values inside standard visual bounds [-50, +50] cents
-    const clampedCents = Math.max(-50, Math.min(50, cents));
-    
-    // Dynamic mapping gauge layout width translates: pixel position transforms
-    // Container width is 100% inside a 400px wide area approx, center is 0px translation.
-    const maxPixelOffset = 180; 
-    const translateAmount = (clampedCents / 50) * maxPixelOffset;
-    needle.style.transform = `translateX(-50%) translateX(${translateAmount}px)`;
-
-    // Process conditional alert labels and feedback coloring profiles
-    if (Math.abs(cents) <= 2) {
-        statusText.textContent = "Perfekt gestimmt!";
-        statusText.style.color = varColor('--accent');
-        needle.style.backgroundColor = varColor('--accent');
-        centsDisplay.textContent = "✔ 0 Cents";
-        centsDisplay.style.color = varColor('--accent');
-    } else if (cents < 0) {
-        statusText.textContent = "Zu tief (Flat)";
-        statusText.style.color = varColor('--flat-red');
-        needle.style.backgroundColor = varColor('--flat-red');
-        centsDisplay.textContent = `${Math.round(cents)} Cents`;
-        centsDisplay.style.color = varColor('--flat-red');
-    } else {
-        statusText.textContent = "Zu hoch (Sharp)";
-        statusText.style.color = varColor('--sharp-orange');
-        needle.style.backgroundColor = varColor('--sharp-orange');
-        centsDisplay.textContent = `+${Math.round(cents)} Cents`;
-        centsDisplay.style.color = varColor('--sharp-orange');
-    }
-}
-
-// Utility CSS property fetching shortcut helper
-function varColor(name) {
-    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
