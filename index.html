@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stringwise Tuner</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.webmanifest">
+</head>
+<body>
+    <!-- Setup / Permissions Overlay -->
+    <div id="start-overlay" class="overlay">
+        <div class="overlay-card">
+            <div class="icon-container">
+                <svg viewBox="0 0 100 100" class="app-icon-svg">
+                    <rect width="100" height="100" rx="22" fill="#121214"/>
+                    <line x1="20" y1="35" x2="80" y2="35" stroke="#00E676" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="20" y1="50" x2="80" y2="50" stroke="#00E676" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="20" y1="65" x2="80" y2="65" stroke="#00E676" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="50" cy="50" r="16" fill="#121214" stroke="#00E676" stroke-width="4"/>
+                    <line x1="50" y1="42" x2="50" y2="58" stroke="#00E676" stroke-width="4" stroke-linecap="round"/>
+                    <line x1="42" y1="50" x2="58" y2="50" stroke="#00E676" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h2>Stringwise Tuner</h2>
+            <p>Bitte erlaube den Zugriff auf dein Mikrofon, um das Stimmgerät zu starten.</p>
+            <button id="btn-start">Mikrofon aktivieren</button>
+        </div>
+    </div>
+
+    <!-- Main Tuner App Container -->
+    <div class="app-container">
+        <header>
+            <div class="logo-area">
+                <svg viewBox="0 0 100 100" class="mini-logo">
+                    <rect width="100" height="100" rx="22" fill="#1A1A1E"/>
+                    <line x1="25" y1="38" x2="75" y2="38" stroke="#00E676" stroke-width="3"/>
+                    <line x1="25" y1="50" x2="75" y2="50" stroke="#00E676" stroke-width="3"/>
+                    <line x1="25" y1="62" x2="75" y2="62" stroke="#00E676" stroke-width="3"/>
+                    <circle cx="50" cy="50" r="12" fill="#1A1A1E" stroke="#00E676" stroke-width="3"/>
+                    <line x1="50" y1="44" x2="50" y2="56" stroke="#00E676" stroke-width="3"/>
+                    <line x1="44" y1="50" x2="56" y2="50" stroke="#00E676" stroke-width="3"/>
+                </svg>
+                <h1>Stringwise Tuner</h1>
+            </div>
+            
+            <div class="controls-row">
+                <label for="tuning-select">Tuning:</label>
+                <select id="tuning-select">
+                    <option value="standard">Standard (EADGBE)</option>
+                    <option value="drop_d">Drop D (DADGBE)</option>
+                    <option value="dadgad">DADGAD</option>
+                    <option value="open_g">Open G (DGDGBD)</option>
+                    <option value="half_step">Half Step Down</option>
+                    <option value="open_d">Open D (DADF#AD)</option>
+                    <option value="c_standard">C Standard (CFA#D#GC)</option>
+                </select>
+            </div>
+        </header>
+
+        <main>
+            <!-- Visual Meter Indicator -->
+            <div class="meter-wrapper">
+                <div class="meter-scale">
+                    <span>-50</span>
+                    <span>0</span>
+                    <span>+50</span>
+                </div>
+                <div class="gauge-bg">
+                    <div id="tuner-needle" class="needle"></div>
+                    <div class="center-target"></div>
+                </div>
+                <div id="cents-display" class="cents-text">0 Cents</div>
+            </div>
+
+            <!-- Big Note Display Box -->
+            <div class="note-card">
+                <div id="current-note" class="note-letter">-</div>
+                <div id="status-text" class="status-message">Warte auf Signal...</div>
+                <div id="freq-display" class="freq-text">0.0 Hz</div>
+            </div>
+
+            <!-- Interactive Strings Panel -->
+            <div class="strings-grid" id="strings-container">
+                <!-- Dynamically populated strings will go here -->
+            </div>
+            
+            <div class="mode-info">
+                <span id="mode-badge" class="badge">Auto-Modus</span>
+                <button id="btn-reset-mode" class="text-btn" style="display:none;">Zurück zu Auto</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed', err));
+        }
+    </script>
+</body>
+</html>

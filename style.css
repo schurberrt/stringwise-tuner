@@ -1,0 +1,328 @@
+:root {
+    --bg-main: #0B0B0C;
+    --bg-card: #141417;
+    --bg-input: #1A1A1E;
+    --accent: #00E676;
+    --accent-glow: rgba(0, 230, 118, 0.2);
+    --text-primary: #FFFFFF;
+    --text-muted: #8E8E93;
+    --flat-red: #FF453A;
+    --sharp-orange: #FF9F0A;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 16px;
+}
+
+/* Permission Overlay styling */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(11, 11, 12, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+.overlay-card {
+    background-color: var(--bg-card);
+    border: 1px solid #242428;
+    border-radius: 28px;
+    padding: 32px;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+}
+
+.icon-container {
+    width: 96px;
+    height: 96px;
+    margin: 0 auto 24px auto;
+}
+
+.app-icon-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 4px 12px var(--accent-glow));
+}
+
+.overlay-card h2 {
+    font-size: 24px;
+    margin-bottom: 12px;
+    font-weight: 700;
+}
+
+.overlay-card p {
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 28px;
+}
+
+.overlay-card button {
+    background-color: var(--accent);
+    color: #000000;
+    border: none;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 14px;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.1s ease, background-color 0.2s ease;
+}
+
+.overlay-card button:active {
+    transform: scale(0.98);
+}
+
+/* Main UI Application Container */
+.app-container {
+    background-color: var(--bg-card);
+    border: 1px solid #242428;
+    border-radius: 28px;
+    width: 100%;
+    max-width: 460px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mini-logo {
+    width: 32px;
+    height: 32px;
+}
+
+.logo-area h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.controls-row {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-input);
+    padding: 10px 16px;
+    border-radius: 14px;
+    border: 1px solid #2C2C32;
+}
+
+.controls-row label {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-right: 12px;
+    font-weight: 500;
+}
+
+.controls-row select {
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 15px;
+    font-weight: 600;
+    flex: 1;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Meter / Gauge area styling */
+.meter-wrapper {
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.meter-scale {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.gauge-bg {
+    background-color: var(--bg-input);
+    height: 48px;
+    border-radius: 24px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #2C2C32;
+}
+
+.center-target {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background-color: var(--accent);
+    transform: translateX(-50%);
+    opacity: 0.4;
+}
+
+.needle {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background-color: var(--text-muted);
+    transform: translateX(-50%) translateX(0px);
+    transition: transform 0.15s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.2s ease;
+    border-radius: 2px;
+}
+
+.cents-text {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: 8px;
+}
+
+/* Big Central Note Presentation */
+.note-card {
+    background-color: var(--bg-input);
+    border: 1px solid #2C2C32;
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.note-letter {
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
+}
+
+.status-message {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.freq-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+/* Strings UI Grid Selection Panel */
+.strings-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.string-btn {
+    background-color: var(--bg-input);
+    border: 1px solid #2C2C32;
+    border-radius: 12px;
+    padding: 12px 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.string-btn .str-name {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.string-btn .str-oct {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.string-btn.active-target {
+    border-color: var(--accent);
+    background-color: rgba(0, 230, 118, 0.05);
+}
+
+.string-btn.active-target .str-name {
+    color: var(--accent);
+}
+
+.string-btn.user-locked {
+    border-color: #30D158;
+    background-color: rgba(48, 209, 88, 0.15);
+    box-shadow: 0 0 10px rgba(48, 209, 88, 0.1);
+}
+
+/* Mode panel bottom footer layout */
+.mode-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 24px;
+}
+
+.badge {
+    background-color: #2C2C32;
+    color: var(--text-primary);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge.manual {
+    background-color: rgba(48, 209, 88, 0.2);
+    color: #30D158;
+}
+
+.text-btn {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.text-btn:hover {
+    text-decoration: underline;
+}
